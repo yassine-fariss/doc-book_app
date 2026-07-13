@@ -13,6 +13,8 @@ class Doctor extends Authenticatable implements MustVerifyEmail
 {
   use HasApiTokens, HasFactory, Notifiable;
 
+  protected $appends = ['rating'];
+
   protected $fillable = [
     'firstname',
     'lastname',
@@ -65,5 +67,16 @@ class Doctor extends Authenticatable implements MustVerifyEmail
   public function appointments()
   {
     return $this->hasMany(Appointment::class);
+  }
+
+  public function reviews()
+  {
+    return $this->hasMany(Review::class);
+  }
+
+  public function getRatingAttribute()
+  {
+    $avg = $this->reviews()->where('status', 'approved')->avg('rating');
+    return $avg ? round($avg, 1) : 4.8;
   }
 }

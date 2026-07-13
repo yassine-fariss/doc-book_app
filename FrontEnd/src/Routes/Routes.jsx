@@ -6,16 +6,17 @@ import {
   Home,
   Login,
   Signup,
-  DocotrDashboard,
+  DoctorDashboard,
   DoctorRendezVous,
   DoctorHistorique,
-  DocotrSettings,
+  DoctorSettings,
   UserSettings,
   UserProfile,
   UserChangePassword,
   BookingAppointment,
   DoctorsLogin,
   DoctorsSignup,
+  ForgotPassword,
   AuthAdmin,
   DashboardAdmin,
   DoctorsList,
@@ -27,6 +28,7 @@ import {
   Aboutus,
   ContactUs,
   DoctorPage,
+  FAQ,
 } from "../Pages";
 import AuthDoctorGuard from "../Middleware/AuthDoctorGuard";
 import GuardAdmin from "../Middleware/GuardAdmin";
@@ -34,7 +36,8 @@ import VerificationEmailGuard from "../Middleware/VerificationEmailGuard";
 import DoctorEmailVerification from "../Middleware/DoctorEmailVerification";
 import DoctorsConfirmationGuard from "../Middleware/DoctorsConfirmationGuard";
 
-const { createBrowserRouter } = require("react-router-dom");
+import { createBrowserRouter } from "react-router-dom";
+
 
 const router = createBrowserRouter([
   {
@@ -43,15 +46,19 @@ const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: "/About",
+    path: "/about",
     element: <Aboutus />,
   },
   {
-    path: "/Contact",
+    path: "/contact",
     element: <ContactUs />,
   },
   {
-    path: "/doctor/View_Profile/:id",
+    path: "/faq",
+    element: <FAQ />,
+  },
+  {
+    path: "/doctor/:id",
     element: <DoctorPage />,
   },
   {
@@ -65,6 +72,10 @@ const router = createBrowserRouter([
   {
     path: "/identifier",
     element: <Signup />,
+  },
+  {
+    path: "/forgotpassword",
+    element: <ForgotPassword />,
   },
   {
     path: "/bookingappointment/:id",
@@ -125,12 +136,12 @@ const router = createBrowserRouter([
     path: "/doctor/dashboard",
     element: (
       <AuthDoctorGuard>
-        <DocotrDashboard />
+        <DoctorDashboard />
       </AuthDoctorGuard>
     ),
   },
   {
-    path: "/docotr/rendezvous",
+    path: "/doctor/rendezvous",
     element: (
       <AuthDoctorGuard>
         <DoctorRendezVous />
@@ -149,7 +160,7 @@ const router = createBrowserRouter([
     path: "/doctor/settings",
     element: (
       <AuthDoctorGuard>
-        <DocotrSettings />
+        <DoctorSettings />
       </AuthDoctorGuard>
     ),
   },

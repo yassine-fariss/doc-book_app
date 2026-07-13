@@ -1,7 +1,6 @@
 import React from "react";
-import { ClockIcon } from "@heroicons/react/20/solid";
+import { ClockIcon, StarIcon, BriefcaseIcon, CurrencyDollarIcon, AcademicCapIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 
 const SearchDoctorCard = ({
   name,
@@ -13,61 +12,109 @@ const SearchDoctorCard = ({
   available,
   time_fin_work,
   time_debut_work,
+  nom_cabinet,
+  rating,
+  fee,
+  experience,
 }) => {
-  const { t } = useTranslation();
+
+  const getDoctorAvatar = (avatar) => {
+    if (!avatar) {
+      return "/img/Rectangle 3.png";
+    }
+    if (avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("data:")) {
+      return avatar;
+    }
+    if (avatar.startsWith("/")) {
+      return avatar;
+    }
+    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+  };
+
+  const isAvailable = available === "1" || available === true || available === 1;
 
   return (
-    <>
-      <div className="border_card mx-auto p-4 w-[372px]  relative text-center  capitalize">
-        <div className="  absolute top-[12px] right-0 flex  items-center ">
-          {available === "1" ? (
-            <div className="bg-green-100 flex items-center text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full ">
-              <span className="flex w-3 h-3 bg-green-500 items-center mr-1 rounded-full"></span>
-              {t("SearchDoctorCard.Available")}
-            </div>
-          ) : (
-            <div className="bg-red-100 flex items-center text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full ">
-              <span className="flex w-3 h-3 bg-red-500 items-center mr-1 rounded-full"></span>
-              {t("SearchDoctorCard.Not_Available")}
-            </div>
-          )}
-        </div>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between p-5 relative hover:shadow-md hover:border-blue-100 transition duration-300">
+      
+      {/* Availability Badge */}
+      <div className="absolute top-4 right-4 z-10">
+        {isAvailable ? (
+          <span className="bg-green-50 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 border border-green-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+            Available
+          </span>
+        ) : (
+          <span className="bg-red-50 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 border border-red-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+            Busy
+          </span>
+        )}
+      </div>
 
-        <div>
+      <div className="space-y-4">
+        {/* Doctor Photo */}
+        <div className="relative rounded-xl overflow-hidden h-[180px] bg-gray-50 border border-gray-100 flex items-center justify-center">
           <img
-            src={avatar_doctor !== null ? avatar_doctor : "/img/Rectangle 5.jpg"}
-            className="h-[236px] w-[334px] rounded-[10px]"
-            alt=""
+            src={getDoctorAvatar(avatar_doctor)}
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            alt={`Dr. ${name}`}
           />
         </div>
-        <div className=" text-center ">
-          <h1 className="font-semibold py-3 ">Dr. {name} </h1>
-          <p className="text-sm"> {specialite} </p>
-          <p className="flex items-center  text-sm justify-center">
-            <ClockIcon className="h-6 w-4 text-[#0c58dc]" />
-            {day_debut_work +
-              "-" +
-              day_fin_work +
-              "," +
-              time_debut_work +
-              "-" +
-              time_fin_work}
-          </p>
-        </div>
-        <div className=" mt-3 ">
-          <Link to={`/bookingappointment/${id}`}>
-            <button className="mr-3 px-[32px] py-[9px] text-white bg-[#0D63F3] rounded-[26px] font-medium text-[13px]">
-              {t("SearchDoctorCard.Book_Now")}
-            </button>
-          </Link>
-          <Link to={`/doctor/View_Profile/${id}`}>
-            <button className="ml-3 px-[32px] py-[7px] border-[2px] border-[#0D63F3] text-[#0D63F3] rounded-[26px] font-medium text-[13px]">
-              {t("SearchDoctorCard.View_Profile")}
-            </button>
-          </Link>
+
+        {/* Doctor Basic Details */}
+        <div className="space-y-2 text-left">
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg leading-snug">Dr. {name}</h3>
+            <p className="text-blue-600 font-semibold text-xs mt-0.5 uppercase tracking-wider">{specialite || "Specialist"}</p>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
+            <StarIcon className="w-4 h-4 text-yellow-400 shrink-0" />
+            <span className="text-gray-700 font-bold text-xs">{rating || "4.8"}</span>
+            <span className="text-gray-400 text-xs">/ 5.0 Rating</span>
+          </div>
+          
+          <div className="border-t border-gray-50 pt-2 space-y-1.5 text-xs text-gray-600">
+            <div className="flex items-center gap-2">
+              <BriefcaseIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="truncate">Clinic: <strong className="text-gray-800">{nom_cabinet || "General Clinic"}</strong></span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <AcademicCapIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Experience: <strong className="text-gray-800">{experience || "8"}+ Yrs</strong></span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <CurrencyDollarIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Fee: <strong className="text-gray-800">{fee || "150"} MAD</strong></span>
+            </div>
+
+            {day_debut_work && day_fin_work && (
+              <div className="flex items-start gap-2">
+                <ClockIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                <span className="capitalize">{day_debut_work} - {day_fin_work}, {time_debut_work} - {time_fin_work}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Buttons */}
+      <div className="grid grid-cols-2 gap-2 mt-5">
+        <Link to={`/doctor/${id}`} className="w-full">
+          <button className="w-full text-center py-2 px-3 border border-blue-600 text-blue-600 text-xs font-bold rounded-full hover:bg-blue-50 transition duration-200">
+            View Profile
+          </button>
+        </Link>
+        <Link to={`/bookingappointment/${id}`} className="w-full">
+          <button className="w-full text-center py-2 px-3 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 hover:shadow-md transition duration-200">
+            Book Now
+          </button>
+        </Link>
+      </div>
+
+    </div>
   );
 };
 

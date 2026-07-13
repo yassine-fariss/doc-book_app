@@ -9,6 +9,7 @@ export { default as TimePicker } from "./Home/TimePicker";
 export { default as AuthButton } from "./AuthButton";
 export { default as DataPicker } from "./Home/DataPicker";
 export { default as Spinner } from "./Spinner";
+export { default as SkeletonCard } from "./SkeletonCard";
 
 // Doctors Dashboard Export
 

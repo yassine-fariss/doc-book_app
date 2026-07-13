@@ -118,4 +118,60 @@ class AppointmentManagementController extends Controller
 
     return response()->json($appointments);
   }
+
+  // Method to get all appointments for a specific user
+  public function GetAppointmentUser($userId)
+  {
+      $appointments = Appointment::with('doctor')
+        ->where('user_id', $userId)
+        ->get();
+
+      return response()->json($appointments);
+  }
+
+  // Method to cancel an appointment
+  public function CancelAppointment($id)
+  {
+      $appointment = Appointment::find($id);
+      if ($appointment) {
+          $appointment->cancel_appointment = "1";
+          $appointment->save();
+          return response()->json(['success' => true]);
+      }
+      return response()->json(['success' => false, 'message' => 'Appointment not found.'], 404);
+  }
+
+  // Method to reschedule an appointment
+  public function RescheduleAppointment(Request $request)
+  {
+      $validator = Validator::make($request->all(), [
+          'id' => 'required|exists:appointments,id',
+          'date_appointment' => 'required',
+          'time_appointment' => 'required'
+      ]);
+      
+      if ($validator->fails()) {
+          return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+      }
+      
+      $appointment = Appointment::find($request->post('id'));
+      if ($appointment) {
+          // Check if the new slot is already booked for that doctor
+          $check = Appointment::where('doctor_id', $appointment->doctor_id)
+              ->where('date_appointment', $request->post('date_appointment'))
+              ->where('time_appointment', $request->post('time_appointment'))
+              ->where('id', '!=', $appointment->id)
+              ->first();
+              
+          if ($check) {
+              return response()->json(['success' => false, 'message' => 'This slot is already booked.'], 422);
+          }
+          
+          $appointment->date_appointment = $request->post('date_appointment');
+          $appointment->time_appointment = $request->post('time_appointment');
+          $appointment->save();
+          return response()->json(['success' => true]);
+      }
+      return response()->json(['success' => false, 'message' => 'Appointment not found.'], 404);
+  }
 }

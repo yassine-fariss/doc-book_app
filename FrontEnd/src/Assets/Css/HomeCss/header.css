@@ -22,6 +22,10 @@ p {
   width: 100%;
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .Header_container {

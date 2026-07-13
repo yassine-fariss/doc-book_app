@@ -6,6 +6,7 @@ import { signUpSuccess } from "../../Redux/SliceAuthDoctor";
 import { get, storeInLocalStorage } from "../../Services/LocalStorageService";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
+import { useToast } from "../../Context/ToastContext";
 
 const Signup = () => {
   document.title = "S'identifier Doctors";
@@ -16,7 +17,7 @@ const Signup = () => {
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
-
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -61,12 +62,15 @@ const Signup = () => {
         dispatch(signUpSuccess(data));
 
         storeInLocalStorage("TOKEN_DOCTOR", data.token);
+        showToast("Registration successful! Welcome, Doctor.", "success");
         setLoading(false);
         navigate("/doctor/dashboard");
       })
 
       .catch((er) => {
         setLoading(false);
+        const errMsg = er.response?.data?.message || "Registration failed. Please try again.";
+        showToast(errMsg, "error");
         if (er.response && er.response.status === 422) {
           setError({ ...error, ...er.response.data.errors });
           console.log(er);

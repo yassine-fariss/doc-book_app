@@ -4,6 +4,7 @@ import axiosClient from "../AxiosClient.js";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpSuccess } from "../Redux/SliceAuthUser";
 import { get, storeInLocalStorage } from "../Services/LocalStorageService";
+import { useToast } from "../Context/ToastContext";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 
@@ -15,6 +16,8 @@ const Signup = () => {
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
+
+  const { showToast } = useToast();
 
   const [loading, setLoading] = useState(false);
 
@@ -57,12 +60,15 @@ const Signup = () => {
         dispatch(signUpSuccess(data));
 
         storeInLocalStorage("TOKEN_USER", data.token);
+        showToast("Registration successful! Welcome to DocAppoint.", "success");
         setLoading(false);
         navigate("/user/profile");
       })
 
       .catch((er) => {
         setLoading(false);
+        const errMsg = er.response?.data?.message || "Registration failed. Please try again.";
+        showToast(errMsg, "error");
         if (er.response && er.response.status === 422) {
           setError({ ...error, ...er.response.data.errors });
         } else {

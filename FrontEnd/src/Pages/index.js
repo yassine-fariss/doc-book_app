@@ -4,6 +4,7 @@ export { default as Home } from "./Home";
 export { default as SearchDoctors } from "./SearchDoctors";
 export { default as Login } from "./Login.jsx";
 export { default as Signup } from "./Signup.jsx";
+export { default as ForgotPassword } from "./ForgotPassword";
 export { default as BookingAppointment } from "./BookingAppointment";
 export { default as DoctorProfile } from "./DoctorProfile";
 export { default as Aboutus } from "./Aboutus";
@@ -12,10 +13,10 @@ export { default as DoctorPage } from "./DoctorPage";
 
 // PAGE DASHBOARD DOCTORS
 
-export { default as DocotrDashboard } from "./Doctors/Dashboard.jsx";
+export { default as DoctorDashboard } from "./Doctors/Dashboard.jsx";
 export { default as DoctorRendezVous } from "./Doctors/RendezVous.jsx";
 export { default as DoctorHistorique } from "./Doctors/Historique.jsx";
-export { default as DocotrSettings } from "./Doctors/Settings.jsx";
+export { default as DoctorSettings } from "./Doctors/Settings.jsx";
 export { default as DoctorsSignup } from "./AuthDoctors/Signup";
 export { default as DoctorsLogin } from "./AuthDoctors/Login";
 export { default as DoctorsVerificationEmail } from "./AuthDoctors/VerificationEmail";
@@ -37,3 +38,4 @@ export { default as DashboardAdmin } from "./Admin/Dashboard";
 export { default as DoctorsList } from "./Admin/DoctorsList";
 export { default as PatientsList } from "./Admin/PationList";
 export { default as NoVerifiedDoctors } from "./Admin/NoVerifiedDoctors";
+export { default as FAQ } from "./FAQ";

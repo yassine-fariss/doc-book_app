@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 import axiosClient from "../../AxiosClient";
 import { loginSuccess } from "../../Redux/SliceAuthDoctor";
 import { Link } from "react-router-dom";
+import { useToast } from "../../Context/ToastContext";
 
 const Login = () => {
   document.title = "Doctors Connexion";
@@ -21,6 +22,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (doctorData.isAuthenticated && get("TOKEN_DOCTOR")) {
@@ -28,6 +30,7 @@ const Login = () => {
     }
   }, [navigate, doctorData.isAuthenticated]);
 
+  const [rememberMe, setRememberMe] = useState(false);
   const [DataForm, setDataForm] = useState({
     email: "",
     password: "",
@@ -35,32 +38,58 @@ const Login = () => {
 
   const [error, setError] = useState("");
 
+  // Load remember me details on mount
+  useEffect(() => {
+    const savedEmail = get("REMEMBER_ME_DOCTOR");
+    if (savedEmail) {
+      setDataForm((prev) => ({ ...prev, email: savedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
+
   const HandleChangeData = (ev) => {
     const { name, value } = ev.target;
     setDataForm({ ...DataForm, [name]: value });
   };
 
   const HandleSubmit = (e) => {
-    setLoading(true);
     e.preventDefault();
+    
+    // Front-end Form Validation
+    if (!DataForm.email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (DataForm.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    
+    setError("");
+    setLoading(true);
+    
     axiosClient
       .post("/doctor/login", DataForm)
       .then(({ data }) => {
-        console.log({ data });
         dispatch(loginSuccess(data));
-
         storeInLocalStorage("TOKEN_DOCTOR", data.token);
+        
+        // Handle Remember Me storage logic
+        if (rememberMe) {
+          storeInLocalStorage("REMEMBER_ME_DOCTOR", DataForm.email);
+        } else {
+          localStorage.removeItem("REMEMBER_ME_DOCTOR");
+        }
+        
+        showToast("Login successful! Welcome back, Doctor.", "success");
         setLoading(false);
         navigate("/doctor/dashboard");
       })
       .catch((err) => {
         setLoading(false);
-        if (err.response && err.response.status === 422) {
-          setError(err.response.data.message);
-          console.log(err);
-        } else {
-          console.log(err);
-        }
+        const errMsg = err.response?.data?.message || "Invalid login credentials.";
+        setError(errMsg);
+        showToast(errMsg, "error");
       });
   };
 
@@ -125,13 +154,21 @@ const Login = () => {
                     onChange={HandleChangeData}
                   />
                 </div>
-                <div className=" mb-2">
-                  <a href="/tets" className="  flex  flex-row-reverse ">
-                    <span className="text-medium tracking-wide text-[13px] text-blue-600">
-                      Mot de passe oublié ?
-                    </span>
-                  </a>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded outline-none"
+                    />
+                    <span>Remember Me</span>
+                  </label>
+                  <Link to="/forgotpassword" className="text-xs text-blue-600 font-bold hover:underline">
+                    Forgot Password?
+                  </Link>
                 </div>
+                
                 <div className="flex justify-center items-center w-full ">
                   <AuthButton Text={"se connecter"} Loading={loading} />
                 </div>

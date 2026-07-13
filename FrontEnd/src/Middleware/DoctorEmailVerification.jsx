@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { get, remove } from "../Services/LocalStorageService";
 import { addDoctorData } from "../Redux/SliceAuthDoctor";
 import { useDispatch, useSelector } from "react-redux";

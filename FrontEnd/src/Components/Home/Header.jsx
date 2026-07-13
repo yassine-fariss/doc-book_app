@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import SelelctLang from "./SelelctLang";
 
 const Header = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [Toggle, setToggle] = useState(false);
 

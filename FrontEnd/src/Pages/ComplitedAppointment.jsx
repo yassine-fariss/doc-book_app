@@ -63,6 +63,7 @@ const ComplitedAppointment = ({
               href={"http://localhost:8000/storage/storage/pdf/" + FilePath}
               download={"FilePath"}
               target="_blank"
+              rel="noreferrer"
               className="text-white  bg-primary-600 hover:bg-primary-700  focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-base inline-flex items-center px-3 py-2.5 text-center mr-2 dark:focus:ring-red-800"
             >
               Imprimer

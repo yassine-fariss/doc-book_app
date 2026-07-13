@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\Doctor\DoctorAuthController;
 use App\Http\Controllers\Auth\User\UserAuthController;
 use App\Http\Controllers\DoctorManagementController;
 use App\Http\Controllers\UsersManagementController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -89,6 +90,9 @@ Route::get('/doctor/appointmenttoday/{doctorId}', [AppointmentManagementControll
 Route::get('/doctor/newappointment/{doctorId}', [AppointmentManagementController::class, 'GetNewAppointment']);
 
 Route::post("/appointment/reserved", [DoctorManagementController::class, 'GetTimeSpiceficDate']);
+Route::get('/user/appointments/{userId}', [AppointmentManagementController::class, 'GetAppointmentUser']);
+Route::post('/appointment/cancel/{id}', [AppointmentManagementController::class, 'CancelAppointment']);
+Route::post('/appointment/reschedule', [AppointmentManagementController::class, 'RescheduleAppointment']);
 
 // ROUTE ADMIN
 
@@ -103,6 +107,21 @@ Route::post('/admin/verified', [AdminController::class, 'VerifiedDoctor']);
 Route::post('/doctor/noverified', [AdminController::class, 'DoctorNoVerified']);
 
 Route::get('/send', [AdminController::class, 'test']);
+
+Route::get('/admin/appointments', [AdminController::class, 'GetAllAppointments']);
+Route::post('/admin/doctor/suspend/{id}', [AdminController::class, 'SuspendDoctor']);
+Route::delete('/admin/doctor/delete/{id}', [AdminController::class, 'DeleteDoctor']);
+Route::get('/admin/stats', [AdminController::class, 'GetDashboardStats']);
+
+// REVIEWS SYSTEM ROUTES
+Route::post('/review/create', [ReviewController::class, 'create']);
+Route::get('/user/reviews/{userId}', [ReviewController::class, 'getUserReviews']);
+Route::get('/doctor/reviews/{doctorId}', [ReviewController::class, 'getDoctorReviews']);
+Route::get('/doctor/reviews/all/{doctorId}', [ReviewController::class, 'getAllReviewsForDoctor']);
+Route::post('/review/reply', [ReviewController::class, 'reply']);
+Route::get('/admin/reviews', [ReviewController::class, 'getAllReviewsAdmin']);
+Route::post('/admin/reviews/status', [ReviewController::class, 'updateStatus']);
+Route::delete('/admin/reviews/{id}', [ReviewController::class, 'delete']);
 
 Route::get('email/verify/{id}', [UserAuthController::class, 'verify'])->name('verification.verify');
 

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 const SelelctLang = () => {
   const [Toggle, setToggle] = useState(false);
 
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const locales = {
     en: "en",

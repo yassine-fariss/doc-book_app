@@ -14,7 +14,9 @@ axiosClient.interceptors.request.use((config) => {
   } else if (get("TOKEN_ADMIN")) {
     token = get("TOKEN_ADMIN");
   }
-  config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
