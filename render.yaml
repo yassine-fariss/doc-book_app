@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: docbook-backend
+    env: docker
+    region: frankfurt # Optional, can be any valid Render region
+    plan: free
+    dockerContext: BackEnd
+    dockerfilePath: BackEnd/Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        # This will automatically pick up the generated Render URL
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: pg-36dc92c0-powerzone244-bf74.d.aivencloud.com
+      - key: DB_PORT
+        value: "17873"
+      - key: DB_DATABASE
+        value: defaultdb
+      - key: DB_USERNAME
+        value: avnadmin
+      - key: DB_PASSWORD
+        # User must set this manually in the Render dashboard for security
+        value: "your_aiven_database_password_here"
+      - key: DB_SSLMODE
+        value: require
+    disk:
+      name: storage
+      mountPath: /var/www/storage
+      sizeGB: 1
