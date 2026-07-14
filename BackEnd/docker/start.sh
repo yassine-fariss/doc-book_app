@@ -18,6 +18,12 @@ php artisan migrate --force || true
 # Storage link
 php artisan storage:link || true
 
+# Dynamically configure Nginx listen port for platforms like Railway
+if [ -n "$PORT" ]; then
+  echo "Configuring Nginx to listen on port $PORT..."
+  sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/sites-available/default
+fi
+
 echo "Starting Nginx and PHP-FPM..."
 # Start php-fpm in background
 php-fpm -D
