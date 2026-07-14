@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
   {
     $faker = \Faker\Factory::create();
 
+    // 0. Seed Permanent Demo Accounts
+    $this->call(DemoAccountsSeeder::class);
+
 
     // 1. Seed Admin Account
     Admin::create([
@@ -81,11 +84,17 @@ class DatabaseSeeder extends Seeder
       'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80'
     ];
 
-    // 3. Seed 50 Doctors (25 Male, 25 Female)
+    // 3. Seed 500 Doctors (250 Male, 250 Female)
     $doctors = [];
     
+    $languageOptions = [
+      ['Arabic', 'French'],
+      ['Arabic', 'English'],
+      ['Arabic', 'French', 'English'],
+    ];
+
     // Male Doctors
-    for ($i = 0; $i < 25; $i++) {
+    for ($i = 0; $i < 250; $i++) {
       $specialty = $specialties[$i % 10];
       $hospital = $hospitals[$i % count($hospitals)];
       $avatar = $maleAvatars[$i % count($maleAvatars)];
@@ -108,13 +117,19 @@ class DatabaseSeeder extends Seeder
         'time_debut_work' => '09:00',
         'time_fin_work' => '18:00',
         'available' => 1,
-        'appointment_time' => '30'
+        'appointment_time' => '30',
+        'years_of_experience' => rand(2, 35),
+        'consultation_fee' => rand(20, 70) * 10,
+        'rating' => rand(35, 50) / 10,
+        'gender' => 'Male',
+        'languages' => $languageOptions[rand(0, 2)],
+        'verified' => 1,
       ]);
       $doctors[] = $doc;
     }
 
     // Female Doctors
-    for ($i = 0; $i < 25; $i++) {
+    for ($i = 0; $i < 250; $i++) {
       $specialty = $specialties[($i + 5) % 10];
       $hospital = $hospitals[($i + 5) % count($hospitals)];
       $avatar = $femaleAvatars[$i % count($femaleAvatars)];
@@ -137,7 +152,13 @@ class DatabaseSeeder extends Seeder
         'time_debut_work' => '09:00',
         'time_fin_work' => '18:00',
         'available' => 1,
-        'appointment_time' => '30'
+        'appointment_time' => '30',
+        'years_of_experience' => rand(2, 35),
+        'consultation_fee' => rand(20, 70) * 10,
+        'rating' => rand(35, 50) / 10,
+        'gender' => 'Female',
+        'languages' => $languageOptions[rand(0, 2)],
+        'verified' => 1,
       ]);
       $doctors[] = $doc;
     }
@@ -162,7 +183,7 @@ class DatabaseSeeder extends Seeder
 
     for ($i = 0; $i < 500; $i++) {
       $patient = $patients[rand(0, 199)];
-      $doctor = $doctors[rand(0, 49)];
+      $doctor = $doctors[rand(0, 499)];
       
       // Distribute dates from -30 days to +30 days
       $date = Carbon::now()->addDays(rand(-30, 30))->toDateString();
@@ -196,7 +217,7 @@ class DatabaseSeeder extends Seeder
 
     for ($i = 0; $i < 200; $i++) {
       $patient = $patients[rand(0, 199)];
-      $doctor = $doctors[rand(0, 49)];
+      $doctor = $doctors[rand(0, 499)];
       
       $isPositive = (rand(1, 5) > 1); // 80% positive
       $rating = $isPositive ? rand(4, 5) : rand(2, 3);

@@ -92,6 +92,7 @@ Route::get('/doctor/newappointment/{doctorId}', [AppointmentManagementController
 Route::post("/appointment/reserved", [DoctorManagementController::class, 'GetTimeSpiceficDate']);
 Route::get('/user/appointments/{userId}', [AppointmentManagementController::class, 'GetAppointmentUser']);
 Route::post('/appointment/cancel/{id}', [AppointmentManagementController::class, 'CancelAppointment']);
+Route::post('/appointment/status/{id}', [AppointmentManagementController::class, 'UpdateAppointmentStatus']);
 Route::post('/appointment/reschedule', [AppointmentManagementController::class, 'RescheduleAppointment']);
 
 // ROUTE ADMIN

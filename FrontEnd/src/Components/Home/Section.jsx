@@ -162,68 +162,68 @@ const Section = () => {
         </div>
 
         {/* Premium Center Search Card */}
-        <div className="max-w-5xl mx-auto px-4 mt-12 relative z-10">
-          <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl p-6 md:p-8 space-y-6 transition hover:shadow-2xl">
+        <div className="max-w-4xl mx-auto px-4 mt-12 relative z-10">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-2.5 transition-all hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)]">
             
-            <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
               
               {/* Specialty Select Panel */}
-              <div className="flex-grow md:flex-[4] flex items-center gap-3 bg-gray-50/60 px-4 py-3.5 rounded-2xl border border-gray-100 hover:border-gray-200 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition">
-                <MagnifyingGlassIcon className="w-6 h-6 text-blue-500 flex-shrink-0" />
-                <div className="flex-1 text-left min-w-0">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Specialty</span>
-                  <select
-                    value={searchSpecialty}
-                    onChange={(e) => setSearchSpecialty(e.target.value)}
-                    className="bg-transparent text-sm font-bold text-gray-700 outline-none w-full cursor-pointer appearance-none truncate"
-                  >
-                    <option value="">Choose a specialty</option>
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Dermatology">Dermatology</option>
-                    <option value="Neurology">Neurology</option>
-                    <option value="Pediatrics">Pediatrics</option>
-                    <option value="General Medicine">General Medicine</option>
-                    <option value="Ophthalmology">Ophthalmology</option>
-                    <option value="Orthopedics">Orthopedics</option>
-                    <option value="Dentistry">Dentistry</option>
-                    <option value="Gynecology">Gynecology</option>
-                    <option value="Psychiatry">Psychiatry</option>
-                  </select>
+              <div className="flex-1 w-full flex flex-col justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-xl md:rounded-full hover:border-blue-400 hover:shadow-[0_8px_20px_rgb(59,130,246,0.12)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center gap-2 mb-1">
+                  <MagnifyingGlassIcon className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-black text-gray-400 group-hover:text-blue-500 uppercase tracking-widest transition-colors">Specialty</span>
                 </div>
+                <select
+                  value={searchSpecialty}
+                  onChange={(e) => setSearchSpecialty(e.target.value)}
+                  className="bg-transparent text-sm font-bold text-gray-700 outline-none w-full cursor-pointer appearance-none truncate group-hover:text-gray-900 transition-colors"
+                >
+                  <option value="">What are you looking for?</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Dermatology">Dermatology</option>
+                  <option value="Neurology">Neurology</option>
+                  <option value="Pediatrics">Pediatrics</option>
+                  <option value="General Medicine">General Medicine</option>
+                  <option value="Ophthalmology">Ophthalmology</option>
+                  <option value="Orthopedics">Orthopedics</option>
+                  <option value="Dentistry">Dentistry</option>
+                  <option value="Gynecology">Gynecology</option>
+                  <option value="Psychiatry">Psychiatry</option>
+                </select>
               </div>
 
               {/* City Select Panel */}
-              <div className="flex-grow md:flex-[4] flex items-center gap-3 bg-gray-50/60 px-4 py-3.5 rounded-2xl border border-gray-100 hover:border-gray-200 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition">
-                <MapPinIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                <div className="flex-1 text-left min-w-0">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Location</span>
-                  <select
-                    value={searchCity}
-                    onChange={(e) => setSearchCity(e.target.value)}
-                    className="bg-transparent text-sm font-bold text-gray-700 outline-none w-full cursor-pointer appearance-none truncate"
-                  >
-                    <option value="">Choose a city</option>
-                    <option value="Casablanca">Casablanca</option>
-                    <option value="Rabat">Rabat</option>
-                    <option value="Marrakech">Marrakech</option>
-                    <option value="Tangier">Tangier</option>
-                    <option value="Fes">Fes</option>
-                    <option value="Agadir">Agadir</option>
-                    <option value="Oujda">Oujda</option>
-                    <option value="Kenitra">Kenitra</option>
-                    <option value="Tetouan">Tetouan</option>
-                    <option value="Safi">Safi</option>
-                  </select>
+              <div className="flex-1 w-full flex flex-col justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-xl md:rounded-full hover:border-indigo-400 hover:shadow-[0_8px_20px_rgb(99,102,241,0.12)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPinIcon className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-black text-gray-400 group-hover:text-indigo-500 uppercase tracking-widest transition-colors">Location</span>
                 </div>
+                <select
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className="bg-transparent text-sm font-bold text-gray-700 outline-none w-full cursor-pointer appearance-none truncate group-hover:text-gray-900 transition-colors"
+                >
+                  <option value="">Where do you need it?</option>
+                  <option value="Casablanca">Casablanca</option>
+                  <option value="Rabat">Rabat</option>
+                  <option value="Marrakech">Marrakech</option>
+                  <option value="Tangier">Tangier</option>
+                  <option value="Fes">Fes</option>
+                  <option value="Agadir">Agadir</option>
+                  <option value="Oujda">Oujda</option>
+                  <option value="Kenitra">Kenitra</option>
+                  <option value="Tetouan">Tetouan</option>
+                  <option value="Safi">Safi</option>
+                </select>
               </div>
 
               {/* Find Doctors CTA button */}
               <button 
                 type="submit" 
-                className="w-full md:w-auto md:min-w-[180px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold py-3.5 px-8 rounded-2xl hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition duration-200 flex items-center justify-center gap-2 flex-shrink-0 shadow-sm"
+                className="w-full md:w-auto h-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-base font-bold py-4 px-10 rounded-xl md:rounded-full hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 flex-shrink-0"
               >
-                <MagnifyingGlassIcon className="w-5 h-5 flex-shrink-0" />
-                <span>Find Doctors</span>
+                <MagnifyingGlassIcon className="w-5 h-5 flex-shrink-0 text-white" />
+                <span>Search</span>
               </button>
 
             </form>

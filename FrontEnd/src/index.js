@@ -7,13 +7,16 @@ import { Provider } from "react-redux";
 import store from "./Redux/Store.jsx";
 import "./i18n";
 import { ToastProvider } from "./Context/ToastContext.jsx";
+import AppInitializer from "./AppInitializer";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
   <Provider store={store}>
     <ToastProvider>
-      <RouterProvider router={router} />
+      <AppInitializer>
+        <RouterProvider router={router} />
+      </AppInitializer>
     </ToastProvider>
   </Provider>
   // </React.StrictMode>

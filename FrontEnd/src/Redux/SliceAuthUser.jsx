@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { get } from "../Services/LocalStorageService";
+import { get, remove } from "../Services/LocalStorageService";
 
 const initialState = {
   isAuthenticated: get("TOKEN_USER") ? true : false,
@@ -32,6 +32,7 @@ const AuthUserSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.userToken = null;
+      remove("TOKEN_USER");
     },
   },
 });

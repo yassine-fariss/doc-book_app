@@ -42,136 +42,60 @@ const SearchDoctors = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Load all doctors and set initial params
+  // Load all doctors ONCE to populate the filter dropdowns dynamically
   useEffect(() => {
-    setLoading(true);
     axiosClient
-      .post("/search/doctors", {
-        specialite: "",
-        address_cabinet: "",
-        firstname: "",
-        nom_cabinet: "",
-      })
+      .post("/search/doctors", {})
       .then((res) => {
         const docs = res.data.DataSearch || [];
+        setAllDoctors(docs);
         
-        // Enrich data with consistent mock fields since they are not in the standard DB schema
-        const enriched = docs.map((doc) => {
-          const docId = parseInt(doc.id) || 0;
-          return {
-            ...doc,
-            fee: (docId % 4) * 50 + 150, // 150, 200, 250, 300 MAD
-            experience: (docId % 12) + 6, // 6 to 17 Yrs
-            rating: doc.rating ? parseFloat(doc.rating).toFixed(1) : (4.5 + ((docId % 5) * 0.1)).toFixed(1), // Use dynamic rating accessor if present
-            gender: (docId % 2 === 0) ? "Male" : "Female",
-            languages: (docId % 3 === 0) ? ["Arabic", "French"] : (docId % 3 === 1) ? ["Arabic", "English"] : ["Arabic", "French", "English"],
-            hospital: doc.nom_cabinet || "General Hospital",
-            city: doc.address_cabinet || "Casablanca",
-          };
-        });
-
-        setAllDoctors(enriched);
-        setFilteredDoctors(enriched);
-        setLoading(false);
-
         // Read query parameters (e.g. from homepage redirect)
         const params = new URLSearchParams(location.search);
-        setFilterSpecialty(params.get("specialite") || "");
-        setFilterCity(params.get("city") || "");
+        if (params.get("specialite")) setFilterSpecialty(params.get("specialite"));
+        if (params.get("city")) setFilterCity(params.get("city"));
       })
       .catch((err) => {
-        console.error("Error fetching doctors list:", err);
-        setLoading(false);
+        console.error("Error fetching initial doctors list for filters:", err);
       });
   }, [location.search]);
 
   // Compute filter options dynamically from active dataset
   const specialtiesList = ["All Specialties", ...new Set(allDoctors.map((d) => d.specialite).filter(Boolean))];
-  const citiesList = ["All Cities", ...new Set(allDoctors.map((d) => d.city).filter(Boolean))];
-  const hospitalsList = ["All Hospitals", ...new Set(allDoctors.map((d) => d.hospital).filter(Boolean))];
+  const citiesList = ["All Cities", ...new Set(allDoctors.map((d) => d.address_cabinet).filter(Boolean))];
+  const hospitalsList = ["All Hospitals", ...new Set(allDoctors.map((d) => d.nom_cabinet).filter(Boolean))];
 
-  // Apply filters, search and sorting logic
+  // Fetch filtered doctors from the API whenever filters change
   useEffect(() => {
-    let result = [...allDoctors];
-
-    // 1. General Text Search (Doctor Name, Specialty, City, Hospital)
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (doc) => 
-          (doc.firstname && doc.firstname.toLowerCase().includes(q)) ||
-          (doc.lastname && doc.lastname.toLowerCase().includes(q)) ||
-          (doc.specialite && doc.specialite.toLowerCase().includes(q)) ||
-          (doc.city && doc.city.toLowerCase().includes(q)) ||
-          (doc.hospital && doc.hospital.toLowerCase().includes(q))
-      );
-    }
-
-    // 2. Specialty Filter
-    if (filterSpecialty && filterSpecialty !== "All Specialties") {
-      result = result.filter((doc) => doc.specialite === filterSpecialty);
-    }
-
-    // 3. City Filter
-    if (filterCity && filterCity !== "All Cities") {
-      result = result.filter((doc) => doc.city === filterCity);
-    }
-
-    // 4. Hospital Filter
-    if (filterHospital && filterHospital !== "All Hospitals") {
-      result = result.filter((doc) => doc.hospital === filterHospital);
-    }
-
-    // 5. Experience Filter
-    if (filterExperience !== "Any") {
-      const expMin = parseInt(filterExperience);
-      result = result.filter((doc) => doc.experience >= expMin);
-    }
-
-    // 6. Fee Filter
-    if (filterFee !== "Any") {
-      const maxFee = parseInt(filterFee);
-      result = result.filter((doc) => doc.fee <= maxFee);
-    }
-
-    // 7. Gender Filter
-    if (filterGender !== "Any") {
-      result = result.filter((doc) => doc.gender === filterGender);
-    }
-
-    // 8. Languages Filter
-    if (filterLanguages.length > 0) {
-      result = result.filter((doc) => 
-        filterLanguages.every((lang) => doc.languages && doc.languages.includes(lang))
-      );
-    }
-
-    // 9. Rating Filter
-    if (filterRating !== "Any") {
-      const minRating = parseFloat(filterRating);
-      result = result.filter((doc) => parseFloat(doc.rating) >= minRating);
-    }
-
-    // 10. Availability Filter
-    if (filterAvailability === "Available") {
-      result = result.filter((doc) => doc.available === "1" || doc.available === true || doc.available === 1);
-    }
-
-    // 11. Sorting
-    if (sortKey === "FeeLowHigh") {
-      result.sort((a, b) => a.fee - b.fee);
-    } else if (sortKey === "FeeHighLow") {
-      result.sort((a, b) => b.fee - a.fee);
-    } else if (sortKey === "ExpHighLow") {
-      result.sort((a, b) => b.experience - a.experience);
-    } else if (sortKey === "RatingHighLow") {
-      result.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
-    }
-
-    setFilteredDoctors(result);
-    setCurrentPage(1);
+    setLoading(true);
+    axiosClient
+      .post("/search/doctors", {
+        searchQuery,
+        specialite: filterSpecialty,
+        city: filterCity,
+        hospital: filterHospital,
+        experience: filterExperience,
+        fee: filterFee,
+        gender: filterGender,
+        languages: filterLanguages,
+        rating: filterRating,
+        availability: filterAvailability,
+        sortKey: sortKey
+      })
+      .then((res) => {
+        setFilteredDoctors(res.data.DataSearch || []);
+        setCurrentPage(1);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err.response && err.response.status === 404) {
+          setFilteredDoctors([]);
+        } else {
+          console.error("Error fetching filtered doctors:", err);
+        }
+        setLoading(false);
+      });
   }, [
-    allDoctors,
     searchQuery,
     filterSpecialty,
     filterCity,
@@ -190,6 +114,11 @@ const SearchDoctors = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentDoctors = filteredDoctors.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
 
   const handleLanguageChange = (lang) => {
     if (filterLanguages.includes(lang)) {
@@ -469,10 +398,10 @@ const SearchDoctors = () => {
                     time_fin_work={doc.time_fin_work}
                     specialite={doc.specialite}
                     available={doc.available}
-                    nom_cabinet={doc.hospital}
+                    nom_cabinet={doc.nom_cabinet}
                     rating={doc.rating}
-                    fee={doc.fee}
-                    experience={doc.experience}
+                    fee={doc.consultation_fee}
+                    experience={doc.years_of_experience}
                   />
                 ))}
               </div>
@@ -480,33 +409,27 @@ const SearchDoctors = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-4">
+              <div className="flex items-center justify-between border-t border-gray-100 pt-6 mt-8">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(currentPage - 1)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-full text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 shadow-sm"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                   Previous
                 </button>
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`w-10 h-10 rounded-xl text-sm font-bold transition ${
-                      currentPage === i + 1
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                        : "border border-gray-200 text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                
+                <span className="text-sm font-bold text-gray-500">
+                  Page <span className="text-gray-900">{currentPage}</span> of <span className="text-gray-900">{totalPages}</span>
+                </span>
+
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(currentPage + 1)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-full text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 shadow-sm"
                 >
                   Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               </div>
             )}

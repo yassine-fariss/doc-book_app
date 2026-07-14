@@ -13,25 +13,89 @@ class DoctorManagementController extends Controller
 
   public function searchDoctors(Request $request)
   {
-    $specialite = $request->post('specialite');
-    $addressCabinet = $request->post('address_cabinet');
-    $firstname = $request->post('firstname');
-    $nomCabinet = $request->post('nom_cabinet');
+    $query = Doctor::query()->where('verified', 1);
 
-    $doctors = Doctor::where(function ($query) use ($specialite, $addressCabinet, $firstname, $nomCabinet) {
-      if (!empty($specialite)) {
-        $query->where('specialite', 'LIKE', "%$specialite%");
+    // 1. Text Search (Name, Specialty, City, Hospital)
+    $searchQuery = $request->post('searchQuery');
+    if (!empty($searchQuery)) {
+      $query->where(function ($q) use ($searchQuery) {
+        $q->where('firstname', 'LIKE', "%$searchQuery%")
+          ->orWhere('lastname', 'LIKE', "%$searchQuery%")
+          ->orWhere('specialite', 'LIKE', "%$searchQuery%")
+          ->orWhere('address_cabinet', 'LIKE', "%$searchQuery%")
+          ->orWhere('nom_cabinet', 'LIKE', "%$searchQuery%");
+      });
+    }
+
+    // 2. Exact Filters
+    $specialite = $request->post('specialite');
+    if (!empty($specialite) && $specialite !== 'All Specialties') {
+      $query->where('specialite', $specialite);
+    }
+
+    $city = $request->post('city');
+    if (!empty($city) && $city !== 'All Cities') {
+      $query->where('address_cabinet', $city);
+    }
+
+    $hospital = $request->post('hospital');
+    if (!empty($hospital) && $hospital !== 'All Hospitals') {
+      $query->where('nom_cabinet', $hospital);
+    }
+
+    $gender = $request->post('gender');
+    if (!empty($gender) && $gender !== 'Any') {
+      $query->where('gender', $gender);
+    }
+
+    $availability = $request->post('availability');
+    if ($availability === 'Available') {
+      $query->where('available', 1);
+    }
+
+    // 3. Numeric Threshold Filters
+    $experience = $request->post('experience');
+    if (!empty($experience) && $experience !== 'Any') {
+      $query->where('years_of_experience', '>=', (int) $experience);
+    }
+
+    $fee = $request->post('fee');
+    if (!empty($fee) && $fee !== 'Any') {
+      $query->where('consultation_fee', '<=', (int) $fee);
+    }
+
+    $rating = $request->post('rating');
+    if (!empty($rating) && $rating !== 'Any') {
+      $query->where('rating', '>=', (float) $rating);
+    }
+
+    // 4. JSON Array Filter (Languages)
+    $languages = $request->post('languages');
+    if (!empty($languages) && is_array($languages)) {
+      foreach ($languages as $lang) {
+        // Use JSON_CONTAINS for PostgreSQL or MySQL
+        $query->whereJsonContains('languages', $lang);
       }
-      if (!empty($addressCabinet)) {
-        $query->orWhere('address_cabinet', 'LIKE', "%$addressCabinet%");
-      }
-      if (!empty($firstname)) {
-        $query->orWhere('firstname', 'LIKE', "%$firstname%");
-      }
-      if (!empty($nomCabinet)) {
-        $query->orWhere('nom_cabinet', 'LIKE', "%$nomCabinet%");
-      }
-    })->get();
+    }
+
+    // 5. Sorting
+    $sortKey = $request->post('sortKey');
+    if ($sortKey === 'FeeLowHigh') {
+      $query->orderBy('consultation_fee', 'asc');
+    } elseif ($sortKey === 'FeeHighLow') {
+      $query->orderBy('consultation_fee', 'desc');
+    } elseif ($sortKey === 'ExpHighLow') {
+      $query->orderBy('years_of_experience', 'desc');
+    } elseif ($sortKey === 'RatingHighLow') {
+      $query->orderBy('rating', 'desc');
+    } else {
+      $query->orderBy('premium', 'desc')->orderBy('rating', 'desc'); // Default sorting
+    }
+
+    $doctors = $query->get();
+
+    \Log::info('Search Payload:', $request->all());
+    \Log::info('Doctors Found: ' . $doctors->count());
 
     if ($doctors->isNotEmpty()) {
       return response()->json([

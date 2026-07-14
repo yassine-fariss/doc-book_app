@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { get } from "../Services/LocalStorageService";
+import { get, remove } from "../Services/LocalStorageService";
 
 const initialState = {
   isAuthenticated: get("TOKEN_DOCTOR") ? true : false,
@@ -31,6 +31,7 @@ const AuthDoctorSlice = createSlice({
       state.isAuthenticated = false;
       state.doctor = null;
       state.doctorToken = null;
+      remove("TOKEN_DOCTOR");
     },
   },
 });

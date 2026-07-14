@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import GetAuthDoctor from "../../../hooks/GetAuthDoctor";
+
 import { useSelector } from "react-redux";
 import axiosClient from "../../../AxiosClient";
 import AuthButton from "../../AuthButton";
@@ -22,7 +22,7 @@ const PersonalInformation = () => {
     about: "",
   });
 
-  GetAuthDoctor();
+
 
   useEffect(() => {
     if (doctorData.doctor !== null) {

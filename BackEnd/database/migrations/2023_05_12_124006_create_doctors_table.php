@@ -33,6 +33,11 @@ return new class extends Migration
       $table->string('time_fin_work')->nullable();
       $table->string('appointment_time')->nullable();
       $table->string('available')->default(true);
+      $table->integer('years_of_experience')->nullable();
+      $table->integer('consultation_fee')->nullable();
+      $table->decimal('rating', 2, 1)->nullable();
+      $table->string('gender')->nullable();
+      $table->json('languages')->nullable();
       $table->timestamp('email_verified_at')->nullable();
       $table->timestamps();
     });

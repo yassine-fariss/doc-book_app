@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import GetAuthDoctor from "../../../hooks/GetAuthDoctor";
+
 import axiosClient from "../../../AxiosClient";
 
 const TamingWork = () => {
@@ -15,7 +15,7 @@ const TamingWork = () => {
     appointment_time: "",
   });
 
-  GetAuthDoctor();
+
 
   useEffect(() => {
     if (doctorData.doctor !== null) {

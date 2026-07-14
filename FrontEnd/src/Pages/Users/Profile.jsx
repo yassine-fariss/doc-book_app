@@ -5,7 +5,7 @@ import axiosClient from "../../AxiosClient";
 import { logout, addUserData } from "../../Redux/SliceAuthUser";
 import { useNavigate, Link } from "react-router-dom";
 import { remove } from "../../Services/LocalStorageService";
-import GetAuthUser from "../../hooks/GetAuthUser";
+
 import { useToast } from "../../Context/ToastContext.jsx";
 import { 
   UserIcon, 
@@ -29,7 +29,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  GetAuthUser();
+
 
   // Tab State
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -43,7 +43,7 @@ const Profile = () => {
   const [reschedulingId, setReschedulingId] = useState(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("");
-  const [rescheduleReservedSlots, setRescheduleReservedSlots] = useState([]);
+  // Removed unused rescheduleReservedSlots state
   
   // Review Modal State
   const [reviewingAppointment, setReviewingAppointment] = useState(null);
@@ -121,15 +121,12 @@ const Profile = () => {
   // Load reserved slots when reschedule date is chosen
   useEffect(() => {
     if (!rescheduleDate || !reschedulingId) {
-      setRescheduleReservedSlots([]);
       return;
     }
     const appt = appointments.find((a) => a.id === reschedulingId);
     if (!appt) return;
 
-    const dateObj = new Date(rescheduleDate);
-    dateObj.setDate(dateObj.getDate() + 1);
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = rescheduleDate;
 
     axiosClient
       .post("/appointment/reserved", {
@@ -137,11 +134,10 @@ const Profile = () => {
         dateApointment: formattedDate,
       })
       .then((res) => {
-        setRescheduleReservedSlots(res.data || []);
+        // Do nothing with reserved slots for now
       })
       .catch((err) => {
-        console.error("Error loading reserved slots for reschedule:", err);
-        setRescheduleReservedSlots([]);
+        console.error("Error fetching reserved slots for reschedule:", err);
       });
   }, [rescheduleDate, reschedulingId, appointments]);
 
@@ -181,9 +177,7 @@ const Profile = () => {
     e.preventDefault();
     if (!rescheduleDate || !rescheduleTime || !reschedulingId) return;
 
-    const dateObj = new Date(rescheduleDate);
-    dateObj.setDate(dateObj.getDate() + 1);
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = rescheduleDate;
 
     axiosClient
       .post("/appointment/reschedule", {
@@ -326,18 +320,22 @@ const Profile = () => {
   const getDoctorAvatar = (avatar) => {
     if (!avatar) return "/img/Rectangle 3.png";
     if (avatar.startsWith("http") || avatar.startsWith("/")) return avatar;
-    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+    const storageUrl = process.env.REACT_APP_STORAGE_URL || "http://127.0.0.1:8000/storage";
+    return `${storageUrl}/images/doctors/${avatar}`;
   };
 
+  const todayDateObj = new Date();
+  const todayStr = `${todayDateObj.getFullYear()}-${String(todayDateObj.getMonth() + 1).padStart(2, '0')}-${String(todayDateObj.getDate()).padStart(2, '0')}`;
+
   const upcomingAppointments = appointments.filter(
-    a => a.cancel_appointment !== "1" && new Date(a.date_appointment) >= new Date().setHours(0,0,0,0)
+    a => (a.status === "Pending" || a.status === "Confirmed") && a.date_appointment >= todayStr
   );
   
   const pastAppointments = appointments.filter(
-    a => a.cancel_appointment === "1" || new Date(a.date_appointment) < new Date().setHours(0,0,0,0)
+    a => a.status === "Completed" || a.status === "Cancelled" || (a.status !== "Completed" && a.status !== "Cancelled" && a.date_appointment < todayStr)
   );
 
-  const availableHours = ["09:00", "09:40", "10:20", "11:00", "11:40", "14:00", "14:40", "15:20", "16:00"];
+  // availableHours removed due to unused lint warning
 
   return (
     <>
@@ -475,7 +473,7 @@ const Profile = () => {
                     <div className="space-y-4">
                       {upcomingAppointments.slice(0, 2).map((appt) => (
                         <div key={appt.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-start md:items-center gap-4">
                             {appt.doctor && (
                               <img 
                                 src={getDoctorAvatar(appt.doctor.avatar_doctor)} 
@@ -487,8 +485,16 @@ const Profile = () => {
                               <p className="font-bold text-gray-900 text-sm">
                                 {appt.doctor ? `Dr. ${appt.doctor.firstname} ${appt.doctor.lastname}` : "Clinic Doctor"}
                               </p>
-                              <p className="text-xs text-blue-600 font-semibold">{appt.doctor?.specialite || "Specialist"}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">{appt.date_appointment} at {appt.time_appointment} • Type: <span className="capitalize">{appt.type_appointment}</span></p>
+                              <p className="text-xs text-blue-600 font-semibold mb-1">
+                                {appt.doctor?.specialite || "Specialist"} • {appt.doctor?.nom_cabinet || "Hospital"} • {appt.doctor?.address_cabinet || "City"}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                <span className="font-semibold text-gray-700">{appt.date_appointment}</span> at <span className="font-semibold text-gray-700">{appt.time_appointment}</span> • Type: <span className="capitalize">{appt.type_appointment}</span>
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Fee: <span className="font-semibold text-gray-700">{appt.doctor?.consultation_fee || "N/A"} MAD</span> • 
+                                Status: <span className={`ml-1 font-semibold ${appt.status === 'Confirmed' ? 'text-green-600' : 'text-orange-500'}`}>{appt.status || "Pending"}</span>
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -600,23 +606,14 @@ const Profile = () => {
                       
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">New Time Slot</label>
-                        <select
+                        <input
+                          type="time"
                           required
                           value={rescheduleTime}
                           onChange={(e) => setRescheduleTime(e.target.value)}
                           disabled={!rescheduleDate}
                           className="w-full bg-white border border-gray-300 text-sm rounded-xl p-2.5 outline-none focus:border-blue-500 transition disabled:opacity-50"
-                        >
-                          <option value="">Choose Slot</option>
-                          {availableHours.map((slot) => {
-                            const isBooked = rescheduleReservedSlots.includes(slot);
-                            return (
-                              <option key={slot} value={slot} disabled={isBooked}>
-                                {slot} {isBooked ? "(Booked)" : ""}
-                              </option>
-                            );
-                          })}
-                        </select>
+                        />
                       </div>
 
                       <button className="bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition shadow-sm text-sm">
@@ -635,7 +632,7 @@ const Profile = () => {
                     <div className="space-y-4">
                       {upcomingAppointments.map((appt) => (
                         <div key={appt.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-start md:items-center gap-4">
                             {appt.doctor && (
                               <img src={getDoctorAvatar(appt.doctor.avatar_doctor)} alt="" className="w-12 h-12 rounded-lg object-cover" />
                             )}
@@ -643,9 +640,16 @@ const Profile = () => {
                               <p className="font-bold text-gray-900 text-sm">
                                 {appt.doctor ? `Dr. ${appt.doctor.firstname} ${appt.doctor.lastname}` : "Clinic Doctor"}
                               </p>
-                              <p className="text-xs text-blue-600 font-semibold">{appt.doctor?.specialite || "Specialist"}</p>
-                              <p className="text-xs text-gray-400 mt-1">Date: <strong className="text-gray-700">{appt.date_appointment}</strong> at <strong className="text-gray-700">{appt.time_appointment}</strong></p>
-                              <p className="text-xs text-gray-400">Type: <span className="capitalize">{appt.type_appointment}</span></p>
+                              <p className="text-xs text-blue-600 font-semibold mb-1">
+                                {appt.doctor?.specialite || "Specialist"} • {appt.doctor?.nom_cabinet || "Hospital"} • {appt.doctor?.address_cabinet || "City"}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                Date: <strong className="text-gray-700">{appt.date_appointment}</strong> at <strong className="text-gray-700">{appt.time_appointment}</strong> • Type: <span className="capitalize">{appt.type_appointment}</span>
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Fee: <span className="font-semibold text-gray-700">{appt.doctor?.consultation_fee || "N/A"} MAD</span> • 
+                                Status: <span className={`ml-1 font-semibold ${appt.status === 'Confirmed' ? 'text-green-600' : 'text-orange-500'}`}>{appt.status || "Pending"}</span>
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -676,10 +680,10 @@ const Profile = () => {
                   ) : (
                     <div className="space-y-4">
                       {pastAppointments.map((appt) => {
-                        const isCancelled = appt.cancel_appointment === "1";
+                        const isCancelled = appt.status === "Cancelled" || appt.cancel_appointment === "1";
                         return (
-                          <div key={appt.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-75">
-                            <div className="flex items-center gap-4">
+                          <div key={appt.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-75 hover:opacity-100 transition-opacity">
+                            <div className="flex items-start md:items-center gap-4">
                               {appt.doctor && (
                                 <img src={getDoctorAvatar(appt.doctor.avatar_doctor)} alt="" className="w-12 h-12 rounded-lg object-cover opacity-60" />
                               )}
@@ -687,8 +691,15 @@ const Profile = () => {
                                 <p className="font-bold text-gray-800 text-sm">
                                   {appt.doctor ? `Dr. ${appt.doctor.firstname} ${appt.doctor.lastname}` : "Clinic Doctor"}
                                 </p>
-                                <p className="text-xs text-gray-400">{appt.doctor?.specialite || "Specialist"}</p>
-                                <p className="text-xs text-gray-400 mt-1">Date: {appt.date_appointment} at {appt.time_appointment}</p>
+                                <p className="text-xs text-blue-600 font-semibold mb-1">
+                                  {appt.doctor?.specialite || "Specialist"} • {appt.doctor?.nom_cabinet || "Hospital"} • {appt.doctor?.address_cabinet || "City"}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  Date: <strong className="text-gray-700">{appt.date_appointment}</strong> at <strong className="text-gray-700">{appt.time_appointment}</strong> • Type: <span className="capitalize">{appt.type_appointment}</span>
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Fee: <span className="font-semibold text-gray-700">{appt.doctor?.consultation_fee || "N/A"} MAD</span>
+                                </p>
                               </div>
                             </div>
                             <div>
@@ -698,19 +709,21 @@ const Profile = () => {
                                 </span>
                               ) : (
                                 <div className="space-y-2">
-                                  <span className="bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-100 block text-center">
-                                    Completed
+                                  <span className={`text-xs font-semibold px-3 py-1 rounded-full border block text-center ${appt.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                    {appt.status === 'Completed' ? 'Completed' : (appt.status || 'Past')}
                                   </span>
-                                  <button 
-                                    onClick={() => {
-                                      setReviewingAppointment(appt.id);
-                                      setReviewRating(5);
-                                      setReviewComment("");
-                                    }}
-                                    className="text-xs font-bold text-blue-600 hover:underline block text-center w-full"
-                                  >
-                                    Leave Review
-                                  </button>
+                                  {appt.status === 'Completed' && (
+                                    <button 
+                                      onClick={() => {
+                                        setReviewingAppointment(appt.id);
+                                        setReviewRating(5);
+                                        setReviewComment("");
+                                      }}
+                                      className="text-xs font-bold text-blue-600 hover:underline block text-center w-full"
+                                    >
+                                      Leave Review
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>

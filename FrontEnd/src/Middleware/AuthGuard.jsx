@@ -1,49 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router";
-import { get, remove } from "../Services/LocalStorageService";
-import { addUserData } from "../Redux/SliceAuthUser";
-import axiosClient from "../AxiosClient";
+import React from "react";
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router";
+import { get } from "../Services/LocalStorageService";
 
 const AuthGuard = ({ children }) => {
-  const dispatch = useDispatch();
   const AuthUserData = useSelector((state) => state.authUser);
-  const [Loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (
-      AuthUserData.isAuthenticated &&
-      get("TOKEN_USER") &&
-      AuthUserData.user === null
-    ) {
-      setLoading(true);
-      axiosClient
-        .get("/user")
-        .then((re) => {
-          dispatch(addUserData(re.data));
-          setLoading(false);
-        })
-        .catch((er) => {
-          remove("TOKEN_USER")
-          navigate("/connexion");
-        });
-    }
-  }, [dispatch, navigate, AuthUserData.isAuthenticated, AuthUserData.user]);
-
-  if (!AuthUserData.isAuthenticated && !get("TOKEN_USER")) {
+  // If there's no token, redirect to login immediately
+  if (!get("TOKEN_USER")) {
     return <Navigate to="/Connexion" replace />;
   }
 
-  if (!Loading && AuthUserData.user) {
-    if (
-      AuthUserData.isAuthenticated &&
-      get("TOKEN_USER")
-    ) {
-      return children;
-    }
-  } else {
+  // If token exists but user data is not loaded yet (AppInitializer is fetching it), show loading state
+  if (!AuthUserData.user) {
     return (
       <div className=" flex  justify-center items-center h-[100vh] ">
         <div role="status">
@@ -68,6 +37,9 @@ const AuthGuard = ({ children }) => {
       </div>
     );
   }
+
+  // Token exists and user data is loaded
+  return children;
 };
 
 export default AuthGuard;

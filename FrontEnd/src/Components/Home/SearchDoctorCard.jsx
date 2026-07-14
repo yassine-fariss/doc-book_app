@@ -28,7 +28,8 @@ const SearchDoctorCard = ({
     if (avatar.startsWith("/")) {
       return avatar;
     }
-    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+    const storageUrl = process.env.REACT_APP_STORAGE_URL || "http://127.0.0.1:8000/storage";
+    return `${storageUrl}/images/doctors/${avatar}`;
   };
 
   const isAvailable = available === "1" || available === true || available === 1;
@@ -58,6 +59,10 @@ const SearchDoctorCard = ({
             src={getDoctorAvatar(avatar_doctor)}
             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
             alt={`Dr. ${name}`}
+            onError={(e) => {
+              e.target.onerror = null; 
+              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Doctor')}&background=random&size=300`;
+            }}
           />
         </div>
 

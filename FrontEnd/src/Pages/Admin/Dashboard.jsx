@@ -383,7 +383,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                        {appointments.slice(0, 5).map((appt) => (
+                        {appointments.slice(0, 5).map((appt) => {
+                          const isCancelled = appt.status === "Cancelled" || appt.cancel_appointment === "1";
+                          return (
                           <tr key={appt.id}>
                             <td className="px-6 py-4 whitespace-nowrap font-semibold">
                               {appt.user ? `${appt.user.firstname} ${appt.user.lastname}` : "N/A"}
@@ -396,15 +398,17 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap capitalize">{appt.type_appointment}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                appt.cancel_appointment === "1"
-                                  ? "bg-red-50 text-red-700"
-                                  : "bg-green-50 text-green-700"
+                                isCancelled ? "bg-red-50 text-red-700" :
+                                appt.status === "Completed" ? "bg-blue-50 text-blue-700" :
+                                appt.status === "Confirmed" ? "bg-green-50 text-green-700" :
+                                "bg-yellow-50 text-yellow-700"
                               }`}>
-                                {appt.cancel_appointment === "1" ? "Cancelled" : "Active"}
+                                {isCancelled ? "Cancelled" : (appt.status || "Pending")}
                               </span>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                         {appointments.length === 0 && (
                           <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-400">No appointments found</td></tr>
                         )}
@@ -713,7 +717,7 @@ const Dashboard = () => {
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                       {filteredAppointments.map((appt) => {
-                        const isCancelled = appt.cancel_appointment === "1";
+                        const isCancelled = appt.status === "Cancelled" || appt.cancel_appointment === "1";
                         return (
                           <tr key={appt.id} className={`hover:bg-gray-50/50 transition ${isCancelled ? "opacity-60" : ""}`}>
                             <td className="px-6 py-4 whitespace-nowrap font-semibold">
@@ -727,9 +731,12 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap capitalize text-xs">{appt.type_appointment}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                isCancelled ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+                                isCancelled ? "bg-red-50 text-red-700" :
+                                appt.status === "Completed" ? "bg-blue-50 text-blue-700" :
+                                appt.status === "Confirmed" ? "bg-green-50 text-green-700" :
+                                "bg-yellow-50 text-yellow-700"
                               }`}>
-                                {isCancelled ? "Cancelled" : "Active"}
+                                {isCancelled ? "Cancelled" : (appt.status || "Pending")}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right">

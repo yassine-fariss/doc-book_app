@@ -22,7 +22,8 @@ class UserAuthController extends Controller
       'lastname' => $data['lastname'],
       'cin' => $data['cin'],
       'email' => $data['email'],
-      'password' => bcrypt($data['password'])
+      'password' => bcrypt($data['password']),
+      'email_verified_at' => now(),
     ]);
 
     $token = $user->createToken('mainUser')->plainTextToken;

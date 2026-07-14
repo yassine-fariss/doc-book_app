@@ -23,7 +23,9 @@ class DoctorAuthController extends Controller
         'phoneNumber' => $data['phoneNumber'],
         'email' => $data['email'],
         'password' => bcrypt($data['password']),
-        'Matricule' => $data['Matricule']
+        'Matricule' => $data['Matricule'],
+        'email_verified_at' => now(),
+        'verified' => 1,
       ]
     );
 

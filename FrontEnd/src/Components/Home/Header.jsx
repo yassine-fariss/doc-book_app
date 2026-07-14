@@ -91,8 +91,16 @@ const Header = () => {
   };
 
   const handleLogout = () => {
+    let logoutUrl = "/user/logout";
+    if (isAdmin) {
+      triggerLocalLogout(); // Admin lacks a backend logout route
+      return;
+    } else if (isDoctor) {
+      logoutUrl = "/doctor/logout";
+    }
+
     axiosClient
-      .post("/user/logout")
+      .post(logoutUrl)
       .then(() => {
         triggerLocalLogout();
       })
@@ -164,10 +172,10 @@ const Header = () => {
   return (
     <>
       <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-xl border-b border-gray-200/80 ${
           isScrolled 
-            ? "bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm py-3" 
-            : "bg-transparent border-b border-transparent py-5"
+            ? "shadow-md py-3" 
+            : "shadow-sm py-4 md:py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">

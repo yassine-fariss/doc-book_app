@@ -5,7 +5,7 @@ import { NavBarDoctors, Footer } from "../../Components";
 import axiosClient from "../../AxiosClient";
 import { logout } from "../../Redux/SliceAuthDoctor";
 import { remove } from "../../Services/LocalStorageService";
-import GetAuthDoctor from "../../hooks/GetAuthDoctor";
+
 import { useToast } from "../../Context/ToastContext.jsx";
 import {
   UserIcon,
@@ -26,7 +26,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  GetAuthDoctor();
+
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -93,7 +93,8 @@ const Dashboard = () => {
     if (avatar.startsWith("/")) {
       return avatar;
     }
-    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+    const storageUrl = process.env.REACT_APP_STORAGE_URL || "http://127.0.0.1:8000/storage";
+    return `${storageUrl}/images/doctors/${avatar}`;
   };
 
   // Fetch all doctor profile & appointments details
@@ -187,22 +188,30 @@ const Dashboard = () => {
 
   const handleAcceptAppointment = (id) => {
     setActionSuccess("");
-    // We update local state to reflect accepted status
-    setTodayAppointments(todayAppointments.map(a => a.id === id ? { ...a, status: "Accepted" } : a));
-    setUpcomingAppointments(upcomingAppointments.map(a => a.id === id ? { ...a, status: "Accepted" } : a));
-    setActionSuccess("Appointment accepted successfully!");
-    showToast("Appointment accepted successfully!", "success");
-    setTimeout(() => setActionSuccess(""), 4000);
+    axiosClient
+      .post(`/appointment/status/${id}`, { status: "Confirmed" })
+      .then((res) => {
+        if (res.data.success) {
+          setTodayAppointments(todayAppointments.map(a => a.id === id ? { ...a, status: "Confirmed" } : a));
+          setUpcomingAppointments(upcomingAppointments.map(a => a.id === id ? { ...a, status: "Confirmed" } : a));
+          setActionSuccess("Appointment confirmed successfully!");
+          showToast("Appointment confirmed successfully!", "success");
+          setTimeout(() => setActionSuccess(""), 4000);
+        }
+      })
+      .catch((err) => {
+        console.error("Error confirming appointment:", err);
+        showToast("Failed to confirm appointment.", "error");
+      });
   };
 
   const handleRejectAppointment = (id) => {
     if (!window.confirm("Are you sure you want to cancel/reject this appointment?")) return;
     setActionSuccess("");
     axiosClient
-      .post(`/appointment/cancel/${id}`)
+      .post(`/appointment/status/${id}`, { status: "Cancelled" })
       .then((res) => {
         if (res.data.success) {
-          // Remove from upcoming lists
           setTodayAppointments(todayAppointments.filter(a => a.id !== id));
           setUpcomingAppointments(upcomingAppointments.filter(a => a.id !== id));
           setActionSuccess("Appointment rejected/cancelled successfully.");
@@ -218,18 +227,27 @@ const Dashboard = () => {
 
   const handleCompleteAppointment = (id) => {
     setActionSuccess("");
-    // Find the completed appt
-    const completed = todayAppointments.find(a => a.id === id) || upcomingAppointments.find(a => a.id === id);
-    if (!completed) return;
+    axiosClient
+      .post(`/appointment/status/${id}`, { status: "Completed" })
+      .then((res) => {
+        if (res.data.success) {
+          const completed = todayAppointments.find(a => a.id === id) || upcomingAppointments.find(a => a.id === id);
+          if (completed) {
+            completed.status = "Completed";
+            setPastAppointments([completed, ...pastAppointments]);
+          }
+          setTodayAppointments(todayAppointments.filter(a => a.id !== id));
+          setUpcomingAppointments(upcomingAppointments.filter(a => a.id !== id));
 
-    // Move to past list
-    setPastAppointments([completed, ...pastAppointments]);
-    setTodayAppointments(todayAppointments.filter(a => a.id !== id));
-    setUpcomingAppointments(upcomingAppointments.filter(a => a.id !== id));
-
-    setActionSuccess("Appointment marked as completed!");
-    showToast("Appointment marked as completed!", "success");
-    setTimeout(() => setActionSuccess(""), 4000);
+          setActionSuccess("Appointment marked as completed!");
+          showToast("Appointment marked as completed!", "success");
+          setTimeout(() => setActionSuccess(""), 4000);
+        }
+      })
+      .catch((err) => {
+        console.error("Error completing appointment:", err);
+        showToast("Failed to mark appointment as completed.", "error");
+      });
   };
 
   const handleAvailabilitySubmit = (e) => {
@@ -552,13 +570,13 @@ const Dashboard = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                  appt.status === 'Accepted' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'
+                                  appt.status === 'Confirmed' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'
                                 }`}>
                                   {appt.status || "Pending Approval"}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                                {appt.status !== 'Accepted' && (
+                                {appt.status !== 'Confirmed' && (
                                   <button 
                                     onClick={() => handleAcceptAppointment(appt.id)}
                                     className="text-xs font-bold text-green-600 hover:text-green-700"
@@ -742,7 +760,7 @@ const Dashboard = () => {
                           <p className="text-xs text-gray-400 mt-1">Date: <strong className="text-gray-700">{appt.date_appointment}</strong> at <strong className="text-gray-700">{appt.time_appointment}</strong></p>
                         </div>
                         <div className="flex items-center gap-2">
-                          {appt.status !== 'Accepted' && (
+                          {appt.status !== 'Confirmed' && (
                             <button 
                               onClick={() => handleAcceptAppointment(appt.id)}
                               className="text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 py-2 px-4 rounded-xl border border-green-100"
@@ -777,7 +795,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {pastAppointments.map((appt) => {
-                      const isCancelled = appt.cancel_appointment === "1";
+                      const isCancelled = appt.status === "Cancelled" || appt.cancel_appointment === "1";
                       return (
                         <div key={appt.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-75">
                           <div>
@@ -793,8 +811,8 @@ const Dashboard = () => {
                                 Cancelled
                               </span>
                             ) : (
-                              <span className="bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-100">
-                                Completed
+                              <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${appt.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                {appt.status === 'Completed' ? 'Completed' : (appt.status || 'Past')}
                               </span>
                             )}
                           </div>

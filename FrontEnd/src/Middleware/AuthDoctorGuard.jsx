@@ -1,55 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router";
-import { get, remove } from "../Services/LocalStorageService";
-import { addDoctorData } from "../Redux/SliceAuthDoctor";
-import axiosClient from "../AxiosClient";
+import React from "react";
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router";
+import { get } from "../Services/LocalStorageService";
 
 const AuthDoctorGuard = ({ children }) => {
   const AuthDoctorData = useSelector((state) => state.AuthDoctor);
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [Loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (
-      AuthDoctorData.isAuthenticated &&
-      get("TOKEN_DOCTOR") &&
-      !AuthDoctorData.doctor
-    ) {
-      setLoading(true);
-      axiosClient
-        .get("/doctor")
-        .then((re) => {
-          dispatch(addDoctorData(re.data));
-          setLoading(false);
-          console.log(re);
-        })
-        .catch((er) => {
-          console.log(er);
-          remove("TOKEN_DOCTOR")
-          navigate("/doctor/login");
-        });
-    }
-    console.log(AuthDoctorData);
-  }, [dispatch, navigate, AuthDoctorData]);
-
-  if (!AuthDoctorData.isAuthenticated && !get("TOKEN_DOCTOR")) {
+  // If there's no token, redirect to login immediately
+  if (!get("TOKEN_DOCTOR")) {
     return <Navigate to="/doctor/signup" replace />;
   }
 
-  if (!Loading && AuthDoctorData.doctor) {
-    if (
-      AuthDoctorData.isAuthenticated &&
-      get("TOKEN_DOCTOR") &&
-      AuthDoctorData.doctor.verified === 0
-    ) {
-      return <Navigate to={"/doctor/confirmation"} replace />;
-    } else {
-      return children;
-    }
-  } else {
+  // If token exists but doctor data is not loaded yet (AppInitializer is fetching it), show loading state
+  if (!AuthDoctorData.doctor) {
     return (
       <div className=" flex  justify-center items-center h-[100vh] ">
         <div role="status">
@@ -74,6 +37,13 @@ const AuthDoctorGuard = ({ children }) => {
       </div>
     );
   }
+
+  // Token exists and doctor data is loaded
+  if (AuthDoctorData.doctor.verified === 0) {
+    return <Navigate to={"/doctor/confirmation"} replace />;
+  }
+  
+  return children;
 };
 
 export default AuthDoctorGuard;

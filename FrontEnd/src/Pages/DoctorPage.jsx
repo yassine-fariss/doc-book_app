@@ -11,15 +11,14 @@ import ComplitedAppointment from "./ComplitedAppointment";
 import { 
   ClockIcon, 
   ClipboardDocumentCheckIcon, 
-  StarIcon, 
   CheckBadgeIcon, 
   AcademicCapIcon,
   BriefcaseIcon,
   ShieldCheckIcon,
   LanguageIcon,
   BookmarkSquareIcon,
-  CalendarDaysIcon
-} from "@heroicons/react/20/solid";
+  StarIcon,
+} from "@heroicons/react/24/solid";
 
 const DoctorPage = () => {
   const { id } = useParams();
@@ -65,7 +64,8 @@ const DoctorPage = () => {
     const fetchDoctorProfile = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/doctor_view/${id}`);
+        const apiUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/api";
+        const response = await axios.get(`${apiUrl}/doctor_view/${id}`);
         const doctorData = response.data;
         setDoctor(doctorData);
         
@@ -113,9 +113,7 @@ const DoctorPage = () => {
       setReservedSlots([]);
       return;
     }
-    const dateObj = new Date(selectedDate);
-    dateObj.setDate(dateObj.getDate() + 1); // standard date shift
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = selectedDate;
 
     axiosClient
       .post("/appointment/reserved", {
@@ -143,9 +141,7 @@ const DoctorPage = () => {
     }
     setBookingError("");
 
-    const dateObj = new Date(selectedDate);
-    dateObj.setDate(dateObj.getDate() + 1); // Shifting timezone offset
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = selectedDate;
 
     axiosClient
       .post("/take/appointment", {
@@ -175,7 +171,8 @@ const DoctorPage = () => {
     if (avatar.startsWith("/")) {
       return avatar;
     }
-    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+    const storageUrl = process.env.REACT_APP_STORAGE_URL || "http://127.0.0.1:8000/storage";
+    return `${storageUrl}/images/doctors/${avatar}`;
   };
 
   const generateTimeSlots = (start, end, step) => {
@@ -475,51 +472,7 @@ const DoctorPage = () => {
                 </div>
               </div>
 
-              {/* Time Slots Selector Guide */}
-              <div className="border-t border-gray-100 pt-6 space-y-4 text-left">
-                <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-                  <CalendarDaysIcon className="w-5 h-5 text-blue-500" />
-                  Daily Available Slots
-                </h4>
-                
-                {selectedDate ? (
-                  <div className="space-y-4">
-                    <p className="text-xs text-gray-500">
-                      Showing slots for date: <strong className="text-blue-600">{new Date(selectedDate).toDateString()}</strong>. Click a slot to select it.
-                    </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                      {timeSlots.map((slot) => {
-                        const isBooked = reservedSlots.includes(slot);
-                        const isSelected = selectedTime === slot;
-                        
-                        return (
-                          <button
-                            key={slot}
-                            disabled={isBooked}
-                            onClick={() => {
-                              setSelectedTime(slot);
-                              setBookingError("");
-                            }}
-                            className={`py-2 px-1 text-xs font-bold rounded-xl border transition ${
-                              isBooked 
-                                ? "bg-gray-100 border-gray-200 text-gray-400 line-through cursor-not-allowed" 
-                                : isSelected
-                                  ? "bg-blue-600 border-blue-600 text-white shadow-md"
-                                  : "bg-white border-gray-200 text-gray-700 hover:border-blue-500 hover:text-blue-600"
-                            }`}
-                          >
-                            {slot} {isBooked && "(Booked)"}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-blue-50 text-blue-800 text-xs p-4 rounded-xl border border-blue-100 text-center font-medium">
-                    Please select a date in the scheduling sidebar to load and choose from available slots.
-                  </div>
-                )}
-              </div>
+              {/* Removed Time Slots Grid for plain text input */}
             </div>
 
             {/* Patient Reviews Section */}
@@ -631,10 +584,33 @@ const DoctorPage = () => {
 
                     {/* Slot Info */}
                     <div className="space-y-1">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Selected Slot</label>
-                      <div className="bg-gray-50 border border-gray-200 text-sm rounded-xl py-2.5 px-4 font-semibold text-gray-700 flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4 text-gray-400" />
-                        <span>{selectedTime ? `${selectedTime} (Active)` : "Select slot from timeline grid"}</span>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Select Time</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                          <ClockIcon className="w-5 h-5" />
+                        </div>
+                        <select
+                          required
+                          value={selectedTime}
+                          onChange={(e) => {
+                            setSelectedTime(e.target.value);
+                            setBookingError("");
+                          }}
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-2.5 appearance-none cursor-pointer hover:bg-gray-100 transition-colors"
+                        >
+                          <option value="" disabled>Choose an available time...</option>
+                          {timeSlots.map((slot, idx) => {
+                            const isReserved = reservedSlots && reservedSlots.some(r => r && typeof r === 'string' && r.startsWith(slot));
+                            return (
+                              <option key={idx} value={slot} disabled={isReserved} className={isReserved ? "text-red-400" : "text-gray-900 font-medium"}>
+                                {slot} {isReserved ? "(Reserved)" : ""}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                       </div>
                     </div>
 

@@ -13,8 +13,6 @@ class Doctor extends Authenticatable implements MustVerifyEmail
 {
   use HasApiTokens, HasFactory, Notifiable;
 
-  protected $appends = ['rating'];
-
   protected $fillable = [
     'firstname',
     'lastname',
@@ -31,11 +29,17 @@ class Doctor extends Authenticatable implements MustVerifyEmail
     'day_fin_work',
     'time_debut_work',
     'time_fin_work',
+    'appointment_time',
     'available',
     'premium',
     'about',
     'verified',
-    'email_verified_at'
+    'email_verified_at',
+    'years_of_experience',
+    'consultation_fee',
+    'rating',
+    'gender',
+    'languages'
   ];
 
 
@@ -56,6 +60,7 @@ class Doctor extends Authenticatable implements MustVerifyEmail
    */
   protected $casts = [
     'email_verified_at' => 'datetime',
+    'languages' => 'array',
   ];
 
 
@@ -72,11 +77,5 @@ class Doctor extends Authenticatable implements MustVerifyEmail
   public function reviews()
   {
     return $this->hasMany(Review::class);
-  }
-
-  public function getRatingAttribute()
-  {
-    $avg = $this->reviews()->where('status', 'approved')->avg('rating');
-    return $avg ? round($avg, 1) : 4.8;
   }
 }

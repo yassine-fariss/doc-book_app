@@ -4,12 +4,12 @@ import {
   NavBarDoctors,
   SidebarDoctors,
 } from "../../Components";
-import GetAuthDoctor from "../../hooks/GetAuthDoctor";
+
 
 const Historique = () => {
   document.title = "Historique";
 
-  GetAuthDoctor();
+
 
   return (
     <>

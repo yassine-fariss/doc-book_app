@@ -7,10 +7,9 @@ import {
 } from "../../Components";
 import { useDispatch, useSelector } from "react-redux";
 import { get, storeInLocalStorage } from "../../Services/LocalStorageService";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import axiosClient from "../../AxiosClient";
 import { loginSuccess } from "../../Redux/SliceAuthDoctor";
-import { Link } from "react-router-dom";
 import { useToast } from "../../Context/ToastContext";
 
 const Login = () => {
@@ -18,7 +17,8 @@ const Login = () => {
 
   const doctorData = useSelector((state) => state.AuthDoctor);
   const navigate = useNavigate();
-  console.log(doctorData);
+  const location = useLocation();
+
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
@@ -45,7 +45,16 @@ const Login = () => {
       setDataForm((prev) => ({ ...prev, email: savedEmail }));
       setRememberMe(true);
     }
-  }, []);
+
+    // Check for demo autofill query param
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("demo") === "doctor") {
+      setDataForm({
+        email: "demo.doctor@healthconnect.ma",
+        password: "DemoDoctor123!",
+      });
+    }
+  }, [location]);
 
   const HandleChangeData = (ev) => {
     const { name, value } = ev.target;
@@ -170,6 +179,28 @@ const Login = () => {
                 <AuthButton Text={"Login"} Loading={loading} />
               </div>
             </form>
+
+            {/* DEMO ACCOUNTS SECTION */}
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                Presentation Demo Accounts
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  to="/Connexion?demo=patient"
+                  className="w-full py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-xl text-xs transition duration-200 border border-blue-200 flex justify-center items-center"
+                >
+                  Patient Demo
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setDataForm({ email: "demo.doctor@healthconnect.ma", password: "DemoDoctor123!" })}
+                  className="w-full py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold rounded-xl text-xs transition duration-200 border border-indigo-200"
+                >
+                  Doctor Demo
+                </button>
+              </div>
+            </div>
 
             <div className="border-t border-gray-50 pt-6 text-center space-y-3">
               <p className="text-xs md:text-sm text-gray-500">

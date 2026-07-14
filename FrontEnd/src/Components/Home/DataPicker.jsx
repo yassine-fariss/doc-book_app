@@ -7,9 +7,12 @@ const DatePicker = ({ setSelectedDate }) => {
 
   useEffect(() => {
     const datepickerEl = document?.getElementById("datepickerId");
-    new Datepicker(datepickerEl, {
-      autohide: true,
-    });
+    if (datepickerEl) {
+      new Datepicker(datepickerEl, {
+        autohide: true,
+        format: "yyyy-mm-dd",
+      });
+    }
   }, []);
 
   return (

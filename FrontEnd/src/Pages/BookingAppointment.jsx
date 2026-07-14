@@ -9,7 +9,8 @@ import {
   UserIcon,
   CalendarIcon,
   ShieldCheckIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  ClockIcon
 } from "@heroicons/react/20/solid";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../AxiosClient";
@@ -102,9 +103,7 @@ const BookingAppointment = () => {
       setReservedSlots([]);
       return;
     }
-    const dateObj = new Date(selectedDate);
-    dateObj.setDate(dateObj.getDate() + 1); // standard date shift
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = selectedDate;
 
     axiosClient
       .post("/appointment/reserved", {
@@ -154,9 +153,7 @@ const BookingAppointment = () => {
       return;
     }
 
-    const dateObj = new Date(selectedDate);
-    dateObj.setDate(dateObj.getDate() + 1);
-    const formattedDate = dateObj.toISOString().slice(0, 10);
+    const formattedDate = selectedDate;
 
     axiosClient
       .post("/take/appointment", {
@@ -213,7 +210,8 @@ const BookingAppointment = () => {
     if (avatar.startsWith("/")) {
       return avatar;
     }
-    return `http://127.0.0.1:8000/storage/images/doctors/${avatar}`;
+    const storageUrl = process.env.REACT_APP_STORAGE_URL || "http://127.0.0.1:8000/storage";
+    return `${storageUrl}/images/doctors/${avatar}`;
   };
 
   const stepsList = [
@@ -392,33 +390,36 @@ const BookingAppointment = () => {
                 <p className="text-xs text-gray-400">Pick an active, non-reserved time slot on <strong className="text-blue-600">{new Date(selectedDate).toDateString()}</strong>.</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {timeSlots.map((slot) => {
-                    const isBooked = reservedSlots.includes(slot);
-                    const isSelected = selectedTime === slot;
-                    
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        disabled={isBooked}
-                        onClick={() => {
-                          setSelectedTime(slot);
-                          setBookingError("");
-                        }}
-                        className={`py-2 px-1 text-xs font-bold rounded-xl border transition ${
-                          isBooked 
-                            ? "bg-gray-100 border-gray-200 text-gray-400 line-through cursor-not-allowed" 
-                            : isSelected
-                              ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
-                              : "bg-white border-gray-200 text-gray-700 hover:border-blue-500 hover:text-blue-600"
-                        }`}
-                      >
-                        {slot} {isBooked && "(Booked)"}
-                      </button>
-                    );
-                  })}
+              <div className="max-w-sm mx-auto p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Enter Time
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                    <ClockIcon className="w-5 h-5" />
+                  </div>
+                  <select
+                    required
+                    value={selectedTime}
+                    onChange={(e) => {
+                      setSelectedTime(e.target.value);
+                      setBookingError("");
+                    }}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-2.5 appearance-none cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    <option value="" disabled>Choose an available time...</option>
+                    {timeSlots.map((slot, idx) => {
+                      const isReserved = reservedSlots && reservedSlots.some(r => r && typeof r === 'string' && r.startsWith(slot));
+                      return (
+                        <option key={idx} value={slot} disabled={isReserved} className={isReserved ? "text-red-400" : "text-gray-900 font-medium"}>
+                          {slot} {isReserved ? "(Reserved)" : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
                 </div>
               </div>
             </div>

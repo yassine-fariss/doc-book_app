@@ -39,7 +39,8 @@ class AppointmentManagementController extends Controller
       'doctor_id' => $data['doctor_id'],
       'date_appointment' => $data['date_appointment'],
       'time_appointment' => $data['time_appointment'],
-      'type_appointment' => $data['type_appointment']
+      'type_appointment' => $data['type_appointment'],
+      'status' => 'Pending'
     ]);
 
     $doctor = Doctor::find($data['doctor_id']);
@@ -83,37 +84,39 @@ class AppointmentManagementController extends Controller
 
   // Method to get all appointments for a specific doctor on the current date
 
+  // Method to get all appointments for a specific doctor on the current date
   public function GetAppointmentToday($doctorId)
   {
-
     $appointments = Appointment::with('user')
       ->where('doctor_id', $doctorId)
       ->whereDate('date_appointment', Carbon::today())
+      ->whereNotIn('status', ['Completed', 'Cancelled'])
       ->get();
 
     return response()->json($appointments);
   }
 
-
-  // Method to get all appointments for a specific doctor on past dates
+  // Method to get all appointments for a specific doctor on past dates OR completed/cancelled
   public function GetAppointmentOldDate($doctorId)
   {
-
     $appointments = Appointment::with('user')
       ->where('doctor_id', $doctorId)
-      ->whereDate('date_appointment', '<', Carbon::today())
+      ->where(function($query) {
+          $query->whereDate('date_appointment', '<', Carbon::today())
+                ->orWhereIn('status', ['Completed', 'Cancelled']);
+      })
       ->get();
 
     return response()->json($appointments);
   }
 
-  // Method to get all New appointments for a specific doctor on past dates
+  // Method to get all New appointments for a specific doctor on future dates
   public function GetNewAppointment($doctorId)
   {
-
     $appointments = Appointment::with('user')
       ->where('doctor_id', $doctorId)
       ->whereDate('date_appointment', '>', Carbon::today())
+      ->whereNotIn('status', ['Completed', 'Cancelled'])
       ->get();
 
     return response()->json($appointments);
@@ -135,6 +138,30 @@ class AppointmentManagementController extends Controller
       $appointment = Appointment::find($id);
       if ($appointment) {
           $appointment->cancel_appointment = "1";
+          $appointment->status = "Cancelled";
+          $appointment->save();
+          return response()->json(['success' => true]);
+      }
+      return response()->json(['success' => false, 'message' => 'Appointment not found.'], 404);
+  }
+
+  // Method to update appointment status (for Doctor/Admin)
+  public function UpdateAppointmentStatus(Request $request, $id)
+  {
+      $validator = Validator::make($request->all(), [
+          'status' => 'required|string|in:Pending,Confirmed,Completed,Cancelled'
+      ]);
+
+      if ($validator->fails()) {
+          return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+      }
+
+      $appointment = Appointment::find($id);
+      if ($appointment) {
+          $appointment->status = $request->status;
+          if ($request->status === 'Cancelled') {
+              $appointment->cancel_appointment = "1";
+          }
           $appointment->save();
           return response()->json(['success' => true]);
       }
