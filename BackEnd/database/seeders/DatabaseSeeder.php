@@ -33,9 +33,27 @@ class DatabaseSeeder extends Seeder
       'Ophthalmology', 'Psychiatry', 'Gynecology', 'General Medicine', 'Dentistry'
     ];
 
-    $cities = [
-      'Casablanca', 'Rabat', 'Marrakech', 'Fes', 'Tangier',
-      'Agadir', 'Oujda', 'Kenitra', 'Tetouan', 'Meknes'
+    $hospitals = [
+      ['name' => 'Centre Hospitalier Universitaire Ibn Rochd', 'city' => 'Casablanca'],
+      ['name' => 'Hôpital Cheikh Khalifa', 'city' => 'Casablanca'],
+      ['name' => 'Clinique Ghandi', 'city' => 'Casablanca'],
+      ['name' => 'Clinique Badr', 'city' => 'Casablanca'],
+      ['name' => 'Clinique Val d\'Anfa', 'city' => 'Casablanca'],
+      ['name' => 'Centre Hospitalier Universitaire Ibn Sina', 'city' => 'Rabat'],
+      ['name' => 'Hôpital Militaire Mohammed V', 'city' => 'Rabat'],
+      ['name' => 'Hôpital Moulay Youssef', 'city' => 'Rabat'],
+      ['name' => 'Centre Hospitalier Universitaire Mohammed VI', 'city' => 'Marrakech'],
+      ['name' => 'Clinique Internationale de Marrakech', 'city' => 'Marrakech'],
+      ['name' => 'Centre Hospitalier Universitaire Hassan II', 'city' => 'Fès'],
+      ['name' => 'Clinique Al Kawtar', 'city' => 'Fès'],
+      ['name' => 'Centre Hospitalier Universitaire Mohammed VI Tanger', 'city' => 'Tanger'],
+      ['name' => 'Clinique Internationale de Tanger', 'city' => 'Tanger'],
+      ['name' => 'Centre Hospitalier Régional Hassan II', 'city' => 'Agadir'],
+      ['name' => 'Clinique Tilila', 'city' => 'Agadir'],
+      ['name' => 'Centre Hospitalier Universitaire Mohammed VI Oujda', 'city' => 'Oujda'],
+      ['name' => 'Hôpital Mohammed V Meknès', 'city' => 'Meknès'],
+      ['name' => 'Hôpital El Idrissi', 'city' => 'Kénitra'],
+      ['name' => 'Centre Hospitalier Régional Moulay El Hassan Ben El Mehdi', 'city' => 'Laâyoune'],
     ];
 
     // Male Doctor Portrait Pools
@@ -72,7 +90,7 @@ class DatabaseSeeder extends Seeder
     // Male Doctors
     for ($i = 0; $i < 25; $i++) {
       $specialty = $specialties[$i % 10];
-      $city = $cities[$i % 10];
+      $hospital = $hospitals[$i % count($hospitals)];
       $avatar = $maleAvatars[$i % count($maleAvatars)];
 
       $doc = Doctor::create([
@@ -85,8 +103,8 @@ class DatabaseSeeder extends Seeder
         'avatar_doctor' => $avatar,
         'Matricule' => $faker->unique()->randomNumber(5),
         'specialite' => $specialty,
-        'nom_cabinet' => "Morocco Clinical Cabinet " . ($i + 1),
-        'address_cabinet' => $city,
+        'nom_cabinet' => $hospital['name'],
+        'address_cabinet' => $hospital['city'],
         'premium' => ($i % 3 === 0),
         'day_debut_work' => 'lundi',
         'day_fin_work' => 'vendredi',
@@ -101,7 +119,7 @@ class DatabaseSeeder extends Seeder
     // Female Doctors
     for ($i = 0; $i < 25; $i++) {
       $specialty = $specialties[($i + 5) % 10];
-      $city = $cities[($i + 3) % 10];
+      $hospital = $hospitals[($i + 5) % count($hospitals)];
       $avatar = $femaleAvatars[$i % count($femaleAvatars)];
 
       $doc = Doctor::create([
@@ -114,8 +132,8 @@ class DatabaseSeeder extends Seeder
         'avatar_doctor' => $avatar,
         'Matricule' => $faker->unique()->randomNumber(5),
         'specialite' => $specialty,
-        'nom_cabinet' => "Morocco Clinical Cabinet " . ($i + 26),
-        'address_cabinet' => $city,
+        'nom_cabinet' => $hospital['name'],
+        'address_cabinet' => $hospital['city'],
         'premium' => ($i % 3 === 0),
         'day_debut_work' => 'lundi',
         'day_fin_work' => 'vendredi',
