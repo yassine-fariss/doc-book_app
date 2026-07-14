@@ -320,7 +320,7 @@ const Header = () => {
                     </div>
 
                     <Link 
-                      to={userDetails.link} 
+                      to={isPatient ? "/user/profile?tab=dashboard" : userDetails.link} 
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                     >
@@ -329,7 +329,7 @@ const Header = () => {
                     </Link>
 
                     <Link 
-                      to={userDetails.link}
+                      to={isPatient ? "/user/profile?tab=appointments" : userDetails.link}
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                     >
@@ -338,7 +338,7 @@ const Header = () => {
                     </Link>
 
                     <Link 
-                      to={userDetails.link}
+                      to={isPatient ? "/user/profile?tab=settings" : userDetails.link}
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                     >
@@ -455,7 +455,7 @@ const Header = () => {
             {isAuthenticated ? (
               <div className="space-y-3">
                 <Link
-                  to={userDetails.link}
+                  to={isPatient ? "/user/profile?tab=dashboard" : userDetails.link}
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full bg-blue-50 text-blue-600 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-100 transition"
                 >
