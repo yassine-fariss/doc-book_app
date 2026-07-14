@@ -11,7 +11,6 @@ import {
 
 const Footer = ({ colorText }) => {
   const { t } = useTranslation();
-  const textColor = colorText || "white";
   const currentYear = new Date().getFullYear();
 
   // Animation variants for columns
