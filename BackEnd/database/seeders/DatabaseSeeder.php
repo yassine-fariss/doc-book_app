@@ -61,8 +61,6 @@ class DatabaseSeeder extends Seeder
       'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1582750433449-64c86b148388?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
@@ -74,7 +72,6 @@ class DatabaseSeeder extends Seeder
     $femaleAvatars = [
       'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1623854767648-e7bb8c5f24db?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1591604021695-0c69b7c05981?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=compress&cs=tinysrgb&w=300&fit=crop&q=80',
